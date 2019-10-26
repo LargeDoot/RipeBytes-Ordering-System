@@ -5,4 +5,4 @@ main1, main2, main3
 side1, side2, side3
 
 //drinks 
-drink1, dink2, drink3
+drink1, dink2, drink3, drink4, coke

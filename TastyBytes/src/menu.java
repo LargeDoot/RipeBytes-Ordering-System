@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main1 {
+public class menu {
 
 	public static void main(String[] args) {
 		fileReader();
@@ -38,7 +38,8 @@ public class Main1 {
 		} 
 		//Catch and IOExceptions while reading the file and creating the FileReader
 		catch (IOException e) {  
-			System.out.println("File \"menuOptions.txt\", please ensure the file is present then try again.");
+			System.out.println("File \"menuOptions.txt\" cannot be found, please ensure the file is present then try again.");
+			System.out.println(e);
 			return (null);
 		}
 		
@@ -62,12 +63,17 @@ public class Main1 {
 		// TODO Remove print lines after here.
 		
 		/*
-		 * Split each line of menuItems and for a new ArrayList of String Arrays with the split data in it.
+		 * Split each line of menuItems and add a new ArrayList of String Arrays with the split data in it.
 		 * This takes the form of menuItemsOutput[ 0["main1", ... ], 1["side1", ...], 2["drink1", ...] ]
 		 */
-		menuItemsOutput.add(menuItems.get(0).split(",", 0));
-		
+		// TODO Add constant or .length to loop line
+		for (int i = 0; i < 3; i++) {
+			
+			menuItemsOutput.add(menuItems.get(i).split(", ", 0));
+			
+		}
 
+		
 		for (int i = 0; i < menuItemsOutput.size(); i++) {
 			
 			for (int j = 0; j < menuItemsOutput.get(i).length; j++) {
@@ -75,6 +81,8 @@ public class Main1 {
 				System.out.println(menuItemsOutput.get(i)[j]);
 				
 			}
+			
+			System.out.println();
 			
 		}
 		
