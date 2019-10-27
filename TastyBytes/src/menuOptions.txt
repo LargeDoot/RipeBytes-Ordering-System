@@ -1,8 +1,20 @@
+
 //mains
-main1, main2, main3
+chicken burger, cheese burger, veggie burger, chicken nuggets, hotdog
 
 //sides 
 side1, side2, side3
 
 //drinks 
 drink1, dink2, drink3, drink4, coke
+
+
+
+      _           ______       _            
+     (_)          | ___ \     | |           
+ _ __ _ _ __   ___| |_/ /_   _| |_ ___  ___ 
+| '__| | '_ \ / _ \ ___ \ | | | __/ _ \/ __|
+| |  | | |_) |  __/ |_/ / |_| | ||  __/\__ \
+|_|  |_| .__/ \___\____/ \__, |\__\___||___/
+       | |                __/ |             
+       |_|               |___/              
