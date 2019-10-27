@@ -1,12 +1,12 @@
 
-public class foodOrder {
+public class FoodOrder {
 	
 	String main, side, drink;
 	
 	boolean superSize;
 	double price;
 	
-	public foodOrder(String initialMain, String initialSide, String initialDrink) {
+	public FoodOrder(String initialMain, String initialSide, String initialDrink) {
 		
 		main = initialMain;
 		side = initialSide;

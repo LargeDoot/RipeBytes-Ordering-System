@@ -13,19 +13,34 @@ public class Menu {
 		importMenu();
 
 	}
-
+	
+	/**
+	 * Returns arrayList of mains
+	 * 
+	 * @return	ArrayList<String> 
+	 */
 	public String[] getMains() {
 
 		return (menuItemsSplit.get(0));
 
 	}
-
+	
+	/**
+	 * Returns arrayList of sides
+	 * 
+	 * @return	ArrayList<String> 
+	 */
 	public String[] getSides() {
 
 		return (menuItemsSplit.get(1));
 
 	}
-
+	
+	/**
+	 * Returns arrayList of drinks
+	 * 
+	 * @return	ArrayList<String> 
+	 */
 	public String[] getDrinks() {
 
 		return (menuItemsSplit.get(2));
