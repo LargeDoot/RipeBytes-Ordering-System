@@ -1,3 +1,4 @@
+import java.util.Map;
 
 public class FoodOrder {
 	
@@ -6,12 +7,16 @@ public class FoodOrder {
 	boolean superSize;
 	double price;
 	
-	public FoodOrder(String initialMain, String initialSide, String initialDrink) {
+	Menu foodMenu;
+	
+	public FoodOrder(String initialMain, String initialSide, String initialDrink, 
+						Menu menu) {
 		
 		main = initialMain;
 		side = initialSide;
 		drink = initialDrink;
 		
+		foodMenu = menu;
 	}
 	
 	
@@ -42,6 +47,10 @@ public class FoodOrder {
 	
 	
 	public double totalPrice() {
+		
+		price += foodMenu.getPrice(main);
+		price += foodMenu.getPrice(side);
+		price += foodMenu.getPrice(drink);
 		
 		if (superSize == true) {
 			

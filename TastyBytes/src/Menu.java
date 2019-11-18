@@ -1,38 +1,60 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 // TODO Change menu arrays to maps to map pricing and add functions to return prices of food 
 
 public class Menu {
 
-	List<String[]> menuItemsSplit = new ArrayList<String[]>();
+	ArrayList<String[]> menuItemsSplit = new ArrayList<String[]>();
+	ArrayList<ArrayList<String>> menuItemsNames = new ArrayList<ArrayList<String>>();
+	
+	Map<String, Double> menuItemsPrices = new HashMap<String, Double>();
+	
 
 	public Menu() {
+		
+		for (int i = 0; i < 3; i++) {
+			
+			menuItemsNames.add(new ArrayList<String>());
+			
+		}
+		
+		ArrayList<String> menuContentsRaw = importMenu();
+		
+		splitLists(menuContentsRaw);
+		
+	}
+	
+	/**
+	 * Returns price of specified menu item
+	 * 
+	 * @return	double	price of specified menu item
+	 */
+	public double getPrice(String item) {
 
-		importMenu();
+		return (menuItemsPrices.get(item));
 
 	}
 	
 	/**
-	 * Returns arrayList of mains
+	 * Returns map of mains and prices
 	 * 
 	 * @return	ArrayList<String> 
 	 */
-	public String[] getMains() {
+	public ArrayList<String> getMains() {
 
-		return (menuItemsSplit.get(0));
+		return (menuItemsNames.get(0));
 
-	}
+	}	
 	
 	/**
 	 * Returns arrayList of sides
 	 * 
 	 * @return	ArrayList<String> 
 	 */
-	public String[] getSides() {
+	public ArrayList<String> getSides() {
 
-		return (menuItemsSplit.get(1));
+		return (menuItemsNames.get(1));
 
 	}
 	
@@ -41,13 +63,13 @@ public class Menu {
 	 * 
 	 * @return	ArrayList<String> 
 	 */
-	public String[] getDrinks() {
+	public ArrayList<String> getDrinks() {
 
-		return (menuItemsSplit.get(2));
+		return (menuItemsNames.get(2));
 
 	}
 
-	public void importMenu() {
+	public ArrayList<String> importMenu() {
 
 		/*
 		 * Declare a FileReader and BufferedReader for use inside the 'try catch' block
@@ -58,7 +80,7 @@ public class Menu {
 
 		// Create an ArrayList to store file contents inside; each line of the file will
 		// be a string inside the ArrayList
-		List<String> menuItems = new ArrayList<String>();
+		ArrayList<String> menuItems = new ArrayList<String>();
 
 		try {
 			/*
@@ -85,9 +107,22 @@ public class Menu {
 			System.out.println(
 					"File \"menuOptions.txt\" cannot be found, please ensure the file is present then try again.");
 			System.out.println(e);
-			return;
+			//Terminate the program as it cannot perform any functionality with no valid menu.
+			System.exit(0);
 		}
-
+		
+		return(menuItems);
+	}
+	
+	/**
+	 * Takes a List of lines from a file, removes blank lines, lines beginning with "//",
+	 * splits the remaining lines by ", " and then splits the result by "=" to get a map
+	 * of menu items and their prices, where the item name is the key.
+	 * 	
+	 * @param menuItems	List of lines from a file
+	 */
+	public void splitLists(ArrayList<String> menuItems) {
+		
 		/*
 		 * Loop through contents of the menu file, and remove any blank lines, or any
 		 * lines beginning with "//". This will get the ArrayList ready for separation
@@ -112,10 +147,29 @@ public class Menu {
 		 * ], 1["side1", ...], 2["drink1", ...] ]
 		 */
 		// TODO Add constant or .length to loop line
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < menuItems.size(); i++) {
 
 			menuItemsSplit.add(menuItems.get(i).split(", ", 0));
 
+		}
+		
+		/**
+		 * Split each of the split menu items into an item and the corresponding price by
+		 * splitting the string by the "=" and casting the price to an Integer.
+		 * This is then capitalised and inserted into a map ("NAME", double Price) and the 
+		 * names into an ArrayList to be use for displaying the menu in non caps.
+		 */
+		for (int i = 0; i < 3; i++) {
+			
+			for (int j = 0; j < menuItemsSplit.get(i).length; j++) {
+			
+				String[] itemAndPrice = menuItemsSplit.get(i)[j].split("=", 0);
+				
+				menuItemsPrices.put(itemAndPrice[0].toUpperCase(), Double.parseDouble(itemAndPrice[1]));
+				menuItemsNames.get(i).add(itemAndPrice[0]);
+			
+			}
+			
 		}
 
 	}

@@ -1,15 +1,18 @@
 import java.util.*;
 
+//cheeseburger with fries and a sprite, and also a hotdog meal with mash and tea, and also water
+
 public class main {
 
-	static final int CONSOLE_WIDTH = 80;
+	static final int CONSOLE_WIDTH = 70;
 
 	static Menu foodMenu = new Menu();
 
 	public static void main(String[] args) {
 
 		Scanner sc = new Scanner(System.in);
-		ArrayList<String> foodToOrder = new ArrayList<String>();
+		ArrayList<ArrayList<String>> foodToOrder = new ArrayList<ArrayList<String>>();
+		ArrayList<FoodOrder> order = new ArrayList<FoodOrder>();
 
 		printWelcome();
 
@@ -18,16 +21,66 @@ public class main {
 
 		printMenu();
 
+		//Get user input and convert to upper-case
 		System.out.println("Hi there, what would you like to order?");
 		String userResponse = sc.nextLine().toUpperCase();
+		userResponse = userResponse.replaceAll("[-+.^:,]", "");
 		
+		//Scan the input and return an ArrayList of ArrayLists (mains, sides, drinks)
 		foodToOrder = scanUserInput(userResponse);
+		int orderSize = foodToOrder.size();
 		
-		for (int i = 0; i < foodToOrder.size(); i++) {
+		
+		int numMains = foodToOrder.get(0).size();
+		int numSides = foodToOrder.get(1).size();
+		int numDrinks = foodToOrder.get(2).size();
+		
+		int numMeals = getNumberMeals(numMains, numSides, numDrinks)[0];
+		
+		for (int i = 0; i < numMeals; i++) {
 			
-			System.out.println(foodToOrder.get(i));
+			order.add(new FoodOrder(foodToOrder.get(0).get(i), 
+									foodToOrder.get(1).get(i), 
+									foodToOrder.get(2).get(i),
+									foodMenu));
 			
 		}
+		
+		// code to print the object list
+		for (int i = 0; i<order.size();i++) {
+			
+			System.out.printf("Meal %d:%n", i+1);
+			
+			System.out.printf("Main: %s%n", order.get(i).getMain());
+			System.out.printf("Side: %s%n", order.get(i).getSide());
+			System.out.printf("Drink: %s%n", order.get(i).getDrink());
+			System.out.println();
+			
+		}
+		
+		for (int i = numMeals; i > 0; i--) {
+			
+			for (int j = 0; j < orderSize; j++) {
+			
+				foodToOrder.get(j).remove(i-1);
+			
+			}	
+				
+		}
+		
+		System.out.println("Other items:");
+		
+		for (int i = 0; i < orderSize; i++) {
+					
+			for (int j = 0; j < foodToOrder.get(i).size(); j++) {
+					
+				System.out.println(foodToOrder.get(i).get(j));
+					
+			}	
+						
+		}
+		
+		System.out.printf("%nThe total cost of your order is £%.02f", getFinalPrice(foodToOrder, order));
 	}
 	
 	/**
@@ -37,41 +90,106 @@ public class main {
 	 * @param userInput	userInput to be checked
 	 * @return			ArrayList of matching items
 	 */
-	public static ArrayList<String> scanUserInput(String userInput) {
+	public static ArrayList<ArrayList<String>> scanUserInput(String userInput) {
 
 		String[] splitUserInput = new String[0];
-		ArrayList<String> foodToOrder = new ArrayList<String>();
+		
+		ArrayList<ArrayList<String>> foodToOrder = new ArrayList<ArrayList<String>>();
+		
+		ArrayList<String> mainsToOrder = new ArrayList<String>();
+		ArrayList<String> sidesToOrder = new ArrayList<String>();
+		ArrayList<String> drinksToOrder = new ArrayList<String>();
 
 		splitUserInput = userInput.split(" ", 0);
 
 		for (int i = 0; i < splitUserInput.length; i++) {
 			
 			
-			for (int j = 0; j < foodMenu.getMains().length; j++) {
-				if (foodMenu.getMains()[j].toUpperCase().contentEquals(splitUserInput[i])) {
-					foodToOrder.add(splitUserInput[i]);
+			for (int j = 0; j < foodMenu.getMains().size(); j++) {
+				if (foodMenu.getMains().get(j).toUpperCase().contentEquals(splitUserInput[i])) {
+					mainsToOrder.add(splitUserInput[i]);
 				}
 			}
 			
 			
-			for (int j = 0; j < foodMenu.getSides().length; j++) {
-				if (foodMenu.getSides()[j].toUpperCase().contentEquals(splitUserInput[i])) {
-					foodToOrder.add(splitUserInput[i]);
+			for (int j = 0; j < foodMenu.getSides().size(); j++) {
+				if (foodMenu.getSides().get(j).toUpperCase().contentEquals(splitUserInput[i])) {
+					sidesToOrder.add(splitUserInput[i]);
 				}
 			}
 			
 			
-			for (int j = 0; j < foodMenu.getDrinks().length; j++) {
-				if (foodMenu.getDrinks()[j].toUpperCase().contentEquals(splitUserInput[i])) {
-					foodToOrder.add(splitUserInput[i]);
+			for (int j = 0; j < foodMenu.getDrinks().size(); j++) {
+				if (foodMenu.getDrinks().get(j).toUpperCase().contentEquals(splitUserInput[i])) {
+					drinksToOrder.add(splitUserInput[i]);
 				}
 			}
 		}
-
+		
+		foodToOrder.add(mainsToOrder);
+		foodToOrder.add(sidesToOrder);
+		foodToOrder.add(drinksToOrder);
+		
 		return foodToOrder;
 
 	}
-
+	
+	
+	/**
+	 * Works out the price of all meals, and single items that are to be ordered.
+	 * 
+	 * @param foodToOrder	list of any single items
+	 * @param order			list of any meals
+	 * @return	double		price of all food in order
+	 */
+	public static double getFinalPrice(ArrayList<ArrayList<String>> foodToOrder, 
+									 ArrayList<FoodOrder> order) {
+		
+		double totalPrice = 0;
+		
+		for (int i = 0;i < order.size(); i++) {
+			
+			totalPrice += order.get(i).totalPrice();
+			
+		}
+		
+		for (int i = 0; i < foodToOrder.size(); i++) {
+			
+			for (int j = 0; j <foodToOrder.get(i).size(); j++) {
+				
+				totalPrice += foodMenu.getPrice(foodToOrder.get(i).get(j));
+				
+			}
+			
+		}
+		
+		return totalPrice;
+		
+	}
+	
+	/**
+	 * Work out which of the arrays is shortest. This will be used to determine how many meals 
+	 * can be created
+	 * 
+	 * @param numMains	number of mains
+	 * @param numSides	number of sides
+	 * @param numDrinks	number of drinks
+	 * @return			smallest length
+	 */
+	public static int[] getNumberMeals(int numMains, int numSides, int numDrinks) {
+		
+		int[] arrayLengths = new int[] {numMains, numSides, numDrinks};
+		
+		Arrays.sort(arrayLengths);
+		
+		int[] orderMinMax = new int[] {arrayLengths[0], arrayLengths[2]};
+		
+		return orderMinMax;
+		
+		
+	}	
+	
+	
 	/**
 	 * Print the full contents of the menu; mains, sides and drinks. The menu is
 	 * enclosed inside a box of "/"'s
@@ -83,25 +201,25 @@ public class main {
 
 		// Print mains
 		printMenuLineCenter("Mains");
-		for (int i = 0; i < foodMenu.getMains().length; i++) {
+		for (int i = 0; i < foodMenu.getMains().size(); i++) {
 
-			printMenuLineFilled(foodMenu.getMains()[i], 2);
+			printMenuLineFilled(foodMenu.getMains().get(i));
 		}
 		printMenuLineCenter("");
 
 		// Print sides
 		printMenuLineCenter("Sides");
-		for (int i = 0; i < foodMenu.getSides().length; i++) {
+		for (int i = 0; i < foodMenu.getSides().size(); i++) {
 
-			printMenuLineFilled(foodMenu.getSides()[i], 2);
+			printMenuLineFilled(foodMenu.getSides().get(i));
 		}
 		printMenuLineCenter("");
 
 		// Print drinks
 		printMenuLineCenter("Drinks");
-		for (int i = 0; i < foodMenu.getDrinks().length; i++) {
+		for (int i = 0; i < foodMenu.getDrinks().size(); i++) {
 
-			printMenuLineFilled(foodMenu.getDrinks()[i], 2);
+			printMenuLineFilled(foodMenu.getDrinks().get(i));
 		}
 		printMenuLineCenter("");
 
@@ -113,10 +231,10 @@ public class main {
 	 */
 	public static void printWelcome() {
 
-		printHorizontalLine(2);
+		printHorizontalLine(1);
 		printLogo();
 		printMenuLineCenter("");
-		printHorizontalLine(2);
+		printHorizontalLine(1);
 	}
 
 	/**
@@ -138,7 +256,7 @@ public class main {
 		for (int i = 0; i < numLines; i++) {
 			for (int j = 0; j < CONSOLE_WIDTH; j++) {
 
-				System.out.print("/");
+				System.out.print("\\");
 			}
 
 			System.out.println();
@@ -194,7 +312,7 @@ public class main {
 	 * @param contents contents of the message to be displayed
 	 * @param price    price of item on current line
 	 */
-	public static void printMenuLineFilled(String contents, double price) {
+	public static void printMenuLineFilled(String contents) {
 
 		System.out.print("// ");
 
@@ -208,7 +326,7 @@ public class main {
 		}
 
 		// Format the price double to have 2 decimal places
-		System.out.printf("£%.02f", price);
+		System.out.printf("£%.02f", foodMenu.getPrice(contents.toUpperCase()));
 
 		System.out.println(" //");
 

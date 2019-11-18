@@ -1,9 +1,9 @@
 
 //mains
-Chicken Burger, Cheeseburger, Veggie Burger, Chicken Nuggets, Hotdog
+ChickenBurger=2.10, Cheeseburger=1.00, VeggieBurger=1.20, ChickenNuggets=0.90, Hotdog=0.80
 
 //sides 
-Fries, Side Salad, Mash, Garlic Bread
+Fries=0.99, SideSalad=0.80, Mash=1.20, GarlicBread=1.10, george=0.69
 
 //drinks 
-Coca-Cola, Fanta, Sprite, Oasis, Water, Milkshake, Coffee, Tea
+Coca-Cola=1.20, Fanta=1.00, Sprite=1.00, Oasis=1.00, Water=0.60, Milkshake=1.50, Coffee=0.90, Tea=0.90
