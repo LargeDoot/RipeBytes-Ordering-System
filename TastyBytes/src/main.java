@@ -5,15 +5,19 @@ import java.util.*;
 public class main {
 
 	static final int CONSOLE_WIDTH = 70;
-
 	static Menu foodMenu = new Menu();
+	
 
 	public static void main(String[] args) {
-
 		Scanner sc = new Scanner(System.in);
+		
 		ArrayList<ArrayList<String>> foodToOrder = new ArrayList<ArrayList<String>>();
+		
 		ArrayList<FoodOrder> order = new ArrayList<FoodOrder>();
-
+		ArrayList<String> singleOrderItems = new ArrayList<String>();
+		
+		boolean orderFinished = false;
+		
 		printWelcome();
 
 		System.out.println();
@@ -21,175 +25,252 @@ public class main {
 
 		printMenu();
 
-		//Get user input and convert to upper-case
-		System.out.println("Hi there, what would you like to order?");
-		String userResponse = sc.nextLine().toUpperCase();
-		userResponse = userResponse.replaceAll("[-+.^:,]", "");
+		while (orderFinished == false) {
 		
-		//Scan the input and return an ArrayList of ArrayLists (mains, sides, drinks)
-		foodToOrder = scanUserInput(userResponse);
-		int orderSize = foodToOrder.size();
-		
-		
-		int numMains = foodToOrder.get(0).size();
-		int numSides = foodToOrder.get(1).size();
-		int numDrinks = foodToOrder.get(2).size();
-		
-		int numMeals = getNumberMeals(numMains, numSides, numDrinks)[0];
-		
-		for (int i = 0; i < numMeals; i++) {
+			foodToOrder = getOrder(sc);
+	
+			int orderSize = foodToOrder.size();
+	
+			int numMains = foodToOrder.get(0).size();
+			int numSides = foodToOrder.get(1).size();
+			int numDrinks = foodToOrder.get(2).size();
+	
+			int numMeals = getNumberMeals(numMains, numSides, numDrinks)[0];
+	
+			for (int i = 0; i < numMeals; i++) {
+	
+				order.add(new FoodOrder(foodToOrder.get(0).get(i), foodToOrder.get(1).get(i), foodToOrder.get(2).get(i),
+						foodMenu));
+	
+			}
 			
-			order.add(new FoodOrder(foodToOrder.get(0).get(i), 
-									foodToOrder.get(1).get(i), 
-									foodToOrder.get(2).get(i),
-									foodMenu));
-			
-		}
-		
-		// code to print the object list
-		for (int i = 0; i<order.size();i++) {
-			
-			System.out.printf("Meal %d:%n", i+1);
-			
-			System.out.printf("Main: %s%n", order.get(i).getMain());
-			System.out.printf("Side: %s%n", order.get(i).getSide());
-			System.out.printf("Drink: %s%n", order.get(i).getDrink());
-			System.out.println();
-			
-		}
-		
-		for (int i = numMeals; i > 0; i--) {
-			
-			for (int j = 0; j < orderSize; j++) {
-			
-				foodToOrder.get(j).remove(i-1);
-			
-			}	
+			// Add any items NOT part of a meal to the singleOrderItems list
+			for (int i = 0; i < orderSize; i++) {
 				
+				for (int j = numMeals; j < foodToOrder.get(i).size(); j++) {
+					
+					singleOrderItems.add(foodToOrder.get(i).get(j));
+					
+				}
+				
+			}
+			
+			printCurrentOrder(order, singleOrderItems);
+			
+			System.out.println("Would you like to order more? (y/n):");
+			String userResponse = sc.nextLine();
+			if (userResponse.contains("no") || userResponse.contains("n")) {
+				
+				orderFinished = true;
+				
+			}
+			
 		}
-		
-		System.out.println("Other items:");
-		
-		for (int i = 0; i < orderSize; i++) {
-					
-			for (int j = 0; j < foodToOrder.get(i).size(); j++) {
-					
-				System.out.println(foodToOrder.get(i).get(j));
-					
-			}	
-						
+
+		printCurrentOrder(order, singleOrderItems);
+
+		if (order.size() > 0) {
+			superSizeMeals(sc, order);
+			printCurrentOrder(order, singleOrderItems);
 		}
-		
-		System.out.printf("%nThe total cost of your order is £%.02f", getFinalPrice(foodToOrder, order));
+			
+		sc.close();
+		System.out.printf("%nThe total cost of your order is £%.02f", getFinalPrice(singleOrderItems, order));
 	}
 	
+	//////////////////////////////////////////////////////////////////////////////////
+	
 	/**
-	 * Takes a user input and checks each word against the menu, if a menu items is found within the user input string
-	 * then it is added to an ArrayList and returned after the whole user input is checked.
+	 * Asks the user if they want to SuperSize any meals in the order and updates the objects 
+	 * accordingly.
 	 * 
-	 * @param userInput	userInput to be checked
-	 * @return			ArrayList of matching items
+	 * @param	sc	scanner to be parsed
+	 */
+	public static void superSizeMeals(Scanner sc, ArrayList<FoodOrder> mealOrders) {
+		
+		System.out.println("Would you like to supersize any of your meals? This will upgrade\n"
+				+ "your food to a larger size for only £1! If you would like to supersize \n"
+				+ "any of your meals, enter the meal numbers below!:");
+		
+		String mealsToSuperSize = sc.nextLine().replaceAll("\\D+", " ");
+		
+		String[] splitList = new String[0];
+		
+		splitList = mealsToSuperSize.split(" ", 0);
+		
+		for (int i = 0; i < splitList.length; i++) {
+			
+			if (!splitList[i].equals("")) {
+				
+				mealOrders.get(i).superSize();
+				
+			}
+			
+		}
+		
+	}
+	
+	
+	/**
+	 * Gets an input from user and scans it to produce a list of keywords such as menu items
+	 * 
+	 * @param sc	Scanner
+	 * @return	foodToOrder is a list of keywords such as menu items
+	 */
+	public static ArrayList<ArrayList<String>> getOrder(Scanner sc) {
+		
+		ArrayList<ArrayList<String>> foodToOrder = new ArrayList<ArrayList<String>>();
+		
+		do {
+			// Get user input and convert to upper-case
+			System.out.println("What would you like to order? (type 'help' for help):");
+			String userResponse = sc.nextLine().toUpperCase();
+			userResponse = userResponse.replaceAll("\\W+", " ");
+	
+			// Scan the input and return an ArrayList of ArrayLists (mains, sides, drinks)
+			foodToOrder = scanUserInput(userResponse);
+		} while (foodToOrder == null);
+		
+		return foodToOrder;
+	}
+	
+	
+	/**
+	 * Takes a user input and checks each word against the menu, if a menu items is
+	 * found within the user input string then it is added to a 2d ArrayList and
+	 * returned after the whole user input is checked. The arrayList contains a list of
+	 * mains, sides, and drinks
+	 * 
+	 * @param userInput
+	 *            userInput to be checked
+	 * @return ArrayList of matching items
 	 */
 	public static ArrayList<ArrayList<String>> scanUserInput(String userInput) {
 
 		String[] splitUserInput = new String[0];
-		
+
 		ArrayList<ArrayList<String>> foodToOrder = new ArrayList<ArrayList<String>>();
-		
+
 		ArrayList<String> mainsToOrder = new ArrayList<String>();
 		ArrayList<String> sidesToOrder = new ArrayList<String>();
 		ArrayList<String> drinksToOrder = new ArrayList<String>();
 
 		splitUserInput = userInput.split(" ", 0);
 
+		if (userInput.contains("HELP")) {
+			helpInformation();
+
+			return null;
+		}
+
 		for (int i = 0; i < splitUserInput.length; i++) {
-			
-			
+
 			for (int j = 0; j < foodMenu.getMains().size(); j++) {
 				if (foodMenu.getMains().get(j).toUpperCase().contentEquals(splitUserInput[i])) {
 					mainsToOrder.add(splitUserInput[i]);
 				}
 			}
-			
-			
+
 			for (int j = 0; j < foodMenu.getSides().size(); j++) {
 				if (foodMenu.getSides().get(j).toUpperCase().contentEquals(splitUserInput[i])) {
 					sidesToOrder.add(splitUserInput[i]);
 				}
 			}
-			
-			
+
 			for (int j = 0; j < foodMenu.getDrinks().size(); j++) {
 				if (foodMenu.getDrinks().get(j).toUpperCase().contentEquals(splitUserInput[i])) {
 					drinksToOrder.add(splitUserInput[i]);
 				}
 			}
 		}
-		
+
+		if (mainsToOrder.size() == 0 && sidesToOrder.size() == 0 && drinksToOrder.size() == 0) {
+
+			System.out.println("No valid menu items were found in your order. \nPlease "
+					+ "only order food items that are displayed on the menu above.");
+
+			return null;
+
+		}
+
 		foodToOrder.add(mainsToOrder);
 		foodToOrder.add(sidesToOrder);
 		foodToOrder.add(drinksToOrder);
-		
+
 		return foodToOrder;
 
 	}
-	
-	
+
 	/**
 	 * Works out the price of all meals, and single items that are to be ordered.
 	 * 
-	 * @param foodToOrder	list of any single items
-	 * @param order			list of any meals
-	 * @return	double		price of all food in order
+	 * @param foodToOrder
+	 *            list of any single items
+	 * @param order
+	 *            list of any meals
+	 * @return double price of all food in order
 	 */
-	public static double getFinalPrice(ArrayList<ArrayList<String>> foodToOrder, 
-									 ArrayList<FoodOrder> order) {
-		
+	public static double getFinalPrice(ArrayList<String> foodToOrder, ArrayList<FoodOrder> order) {
+
 		double totalPrice = 0;
-		
-		for (int i = 0;i < order.size(); i++) {
-			
+
+		for (int i = 0; i < order.size(); i++) {
+
 			totalPrice += order.get(i).totalPrice();
-			
+
 		}
-		
+
 		for (int i = 0; i < foodToOrder.size(); i++) {
-			
-			for (int j = 0; j <foodToOrder.get(i).size(); j++) {
-				
-				totalPrice += foodMenu.getPrice(foodToOrder.get(i).get(j));
-				
-			}
-			
+
+			totalPrice += foodMenu.getPrice(foodToOrder.get(i));
+
 		}
-		
+
 		return totalPrice;
-		
+
 	}
-	
+
 	/**
-	 * Work out which of the arrays is shortest. This will be used to determine how many meals 
-	 * can be created
+	 * Work out which of the arrays is shortest. This will be used to determine how
+	 * many meals can be created
 	 * 
-	 * @param numMains	number of mains
-	 * @param numSides	number of sides
-	 * @param numDrinks	number of drinks
-	 * @return			smallest length
+	 * @param numMains
+	 *            number of mains
+	 * @param numSides
+	 *            number of sides
+	 * @param numDrinks
+	 *            number of drinks
+	 * @return smallest length
 	 */
 	public static int[] getNumberMeals(int numMains, int numSides, int numDrinks) {
-		
-		int[] arrayLengths = new int[] {numMains, numSides, numDrinks};
-		
+
+		int[] arrayLengths = new int[] { numMains, numSides, numDrinks };
+
 		Arrays.sort(arrayLengths);
-		
-		int[] orderMinMax = new int[] {arrayLengths[0], arrayLengths[2]};
-		
+
+		int[] orderMinMax = new int[] { arrayLengths[0], arrayLengths[2] };
+
 		return orderMinMax;
-		
-		
-	}	
-	
-	
+
+	}
+
+	/**
+	 * Provides information on how to use the program to the user.
+	 */
+	public static void helpInformation() {
+
+		System.out.println("Help information:\n" 
+				+ "- Enter the food you would like to order from the displayed menu\n\n"
+				+ "- Multiple food items can be ordered on one line, but if you need more \n"
+				+ "  then feel free to order more until you specify that you are done!\n\n"
+				+ "- Food ordered will be sorted into meals for your convenience, which is\n"
+				+ "  done by taking a main, side and drink in order of entry. For example,\n"
+				+ "  if you enter 'burger burger fries mash water water fanta', meal 1\n"
+				+ "  would have 'burger, fries, water' and meal 2 would have 'burger, mash\n"
+				+ "  and water' with an extra water ordered on its own.\n");
+
+	}
+
 	/**
 	 * Print the full contents of the menu; mains, sides and drinks. The menu is
 	 * enclosed inside a box of "/"'s
@@ -238,10 +319,48 @@ public class main {
 	}
 
 	/**
-	 * TODO
+	 * Prints out the current order to the user, in the form of meals, then items
+	 * ordered outside of a meal.
+	 * 
+	 * @param orderMeals
+	 *            The list of meals that are to be ordered
+	 * @param orderSingles
+	 *            The list of single items to be ordered
 	 */
-	public static void printCurrentOrder() {
-		// TODO
+	public static void printCurrentOrder(ArrayList<FoodOrder> orderMeals, ArrayList<String> orderSingles) {
+
+		printHorizontalLine(1);
+
+		// code to print the object list
+		for (int i = 0; i < orderMeals.size(); i++) {
+
+			printMealHeading(i+1);
+
+			printOrderLine("Main", orderMeals.get(i).getMain());
+			printOrderLine("Side", orderMeals.get(i).getSide());
+			printOrderLine("Drink", orderMeals.get(i).getDrink());
+			printOrderLine("SuperSize™?", String.valueOf(orderMeals.get(i).isSuperSize()));
+
+			printMenuLineCenter("");
+
+		}
+
+		printMenuLineCenter("Other items:");
+
+		for (int i = 0; i < orderSingles.size(); i++) {
+
+//			for (int j = 0; j < orderSingles.get(i).size(); j++) {
+//
+//				// System.out.printf("%s, ", orderSingles.get(i).get(j));
+//				printMenuLineCenter(orderSingles.get(i).get(j));
+//				// System.out.println();
+//
+//			}
+			printMenuLineCenter(orderSingles.get(i));
+
+		}
+
+		printHorizontalLine(1);
 
 	}
 
@@ -249,7 +368,8 @@ public class main {
 	 * Print a horizontal line of "/"'s of a width defined by the CONSOLE_WIDTH
 	 * constant. Can print several lines at once.
 	 * 
-	 * @param numLines Defines how many lines will be printed
+	 * @param numLines
+	 *            Defines how many lines will be printed
 	 */
 	public static void printHorizontalLine(int numLines) {
 
@@ -276,7 +396,8 @@ public class main {
 	 * an extra space when the contents is odd, this is determined using Math.ceil
 	 * for the spaces on the right hand side.
 	 *
-	 * @param contents text that will be printed in the centre of the next line
+	 * @param contents
+	 *            text that will be printed in the centre of the next line
 	 */
 	public static void printMenuLineCenter(String contents) {
 
@@ -305,12 +426,52 @@ public class main {
 	}
 
 	/**
+	 * Same as above function but takes an integer value to be displayed after "Meal
+	 * " This is used simply for printing headings in the order confirmation
+	 * 
+	 * @param mealNum
+	 *            number of meal being printed
+	 */
+	public static void printMealHeading(int mealNum) {
+
+		System.out.print("// ");
+
+		/*
+		 * Work out number of spaces as explained in the above comment 6 is taken away
+		 * from the console width because this is taking into account the "// "
+		 *
+		 * 7 is taken away to account for the length of "Meal x:"
+		 */
+		int spacesLeft = (CONSOLE_WIDTH - 13) / 2;
+		double spacesRight = (CONSOLE_WIDTH - 12) / 2;
+
+		// Print left spaces
+		for (int i = 0; i < spacesLeft; i++) {
+
+			System.out.print(" ");
+		}
+
+		System.out.printf("Meal %d:", mealNum);
+
+		// Print right spaces
+		for (int i = 0; i < spacesRight; i++) {
+
+			System.out.print(" ");
+		}
+
+		System.out.println(" //");
+
+	}
+
+	/**
 	 * printMenuLineFilled takes a message and prints it to the console with "//"
 	 * either side, a price at the end and dots in the space between them. This
 	 * makes prices more clear. The contents is left aligned.
 	 * 
-	 * @param contents contents of the message to be displayed
-	 * @param price    price of item on current line
+	 * @param contents
+	 *            contents of the message to be displayed
+	 * @param price
+	 *            price of item on current line
 	 */
 	public static void printMenuLineFilled(String contents) {
 
@@ -327,6 +488,35 @@ public class main {
 
 		// Format the price double to have 2 decimal places
 		System.out.printf("£%.02f", foodMenu.getPrice(contents.toUpperCase()));
+
+		System.out.println(" //");
+
+	}
+
+	/**
+	 * takes a main, side, drink and displays them with a border and "."s between
+	 * them
+	 * 
+	 * @param contents
+	 *            contents of the message to be displayed
+	 * @param price
+	 *            price of item on current line
+	 */
+	public static void printOrderLine(String foodType, String contents) {
+
+		System.out.print("// ");
+
+		System.out.print(foodType);
+
+		// Minus 6 for "// " and " //", and length of the text being
+		// displayed
+		for (int i = 0; i < (CONSOLE_WIDTH - 6 - foodType.length() - contents.length()); i++) {
+
+			System.out.print(".");
+		}
+
+		// Format the price double to have 2 decimal places
+		System.out.print(contents);
 
 		System.out.println(" //");
 

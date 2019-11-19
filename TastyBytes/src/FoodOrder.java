@@ -54,7 +54,7 @@ public class FoodOrder {
 		
 		if (superSize == true) {
 			
-			return price += 2;
+			return price += 1;
 		} 
 		
 		return(price);
