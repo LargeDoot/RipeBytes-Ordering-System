@@ -1,6 +1,14 @@
 
+//RipeBytes Menu
+//To add an item, add a "," after the previous entry and enter the items 
+//name followed by an "=" sign and the price in form of £XX.xx with no spaces.
+//
+//To remove an item, simply delete it.
+//
+//To edit the proce or name of an item, simply edit it here.
+
 //mains
-ChickenBurger=2.10, Cheeseburger=1.00, VeggieBurger=1.20, ChickenNuggets=0.90, Hotdog=0.80
+ChickenBurger=2.10, Cheeseburger=1.00, VeggieBurger=1.20, ChickenNuggets=0.90, Hotdog=0.80, halloumiburger=1.90
 
 //sides 
 Fries=0.99, SideSalad=0.80, Mash=1.20, GarlicBread=1.10, george=0.69
