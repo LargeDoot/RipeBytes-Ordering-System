@@ -14,7 +14,6 @@ public class FoodOrder {
 	String main, side, drink;
 
 	boolean superSize;
-	double price;
 
 	Menu foodMenu;
 
@@ -50,7 +49,7 @@ public class FoodOrder {
 	 */
 	void setSide(String newSide) {
 
-		main = newSide;
+		side = newSide;
 	}
 
 	/**
@@ -59,7 +58,7 @@ public class FoodOrder {
 	 */
 	void setDrink(String newDrink) {
 
-		main = newDrink;
+		drink = newDrink;
 	}
 
 	/**
@@ -83,7 +82,9 @@ public class FoodOrder {
 	 * @return	price of the meal
 	 */
 	double totalPrice() {
-
+		
+		double price = 0;
+		
 		price += foodMenu.getPrice(main);
 		price += foodMenu.getPrice(side);
 		price += foodMenu.getPrice(drink);

@@ -2,12 +2,12 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Responsible for:                                                  <br>
- * - Importing a menu from text file                                 <br>
- * - Splitting the contents up into each menu item                   <br>
- * - Splitting the items from its price and storing themboth in a map<br>
- * - Returning prices of items when given an item name               <br>
- * - Returning a list of mains, sides, or drinks                     <br>
+ * Responsible for: <br>
+ * - Importing a menu from text file <br>
+ * - Splitting the contents up into each menu item <br>
+ * - Splitting the items from its price and storing them both in a map<br>
+ * - Returning prices of items when given an item name <br>
+ * - Returning a list of mains, sides, or drinks <br>
  * 
  * @author Ethan Wilson
  *
@@ -110,9 +110,9 @@ public class Menu {
 		try {
 
 			/*
-			 * Used
+			 * Used <a href =
 			 * "https://stackoverflow.com/questions/16104616/using-bufferedreader-to-read-
-			 * text-file" for help on reading files using BufferedReader.
+			 * text-file">for help on reading files using BufferedReader.
 			 */
 
 			in = new FileReader("src/menuOptions.txt");

@@ -67,10 +67,10 @@ public class Main {
 
 			}
 
-			//Print the order as is
+			// Print the order as is
 			PrintClass.printCurrentOrder(order, singleOrderItems);
 
-			//Set orderFinished to true if the user has finished the order
+			// Set orderFinished to true if the user has finished the order
 			System.out.println("Would you like to order more? (y/n):");
 			String userResponse = sc.nextLine();
 			if (userResponse.contains("no") || userResponse.contains("n")) {
@@ -90,19 +90,29 @@ public class Main {
 			PrintClass.printCurrentOrder(order, singleOrderItems);
 		}
 
-		System.out.printf("%nThe total cost of your order is £%.02f%n", getFinalPrice(singleOrderItems, order));
+		double finalPrice = getFinalPrice(singleOrderItems, order);
+
+		System.out.printf("%nThe total cost of your order is £%.02f%n", finalPrice);
 
 		// Ask the user if they need to edit order, and keep asking until they decline
 		while (editOrder(sc, order, singleOrderItems) == true)
 			;
 
+		// Work out the final price again to account for any changes in the edit
+		finalPrice = getFinalPrice(singleOrderItems, order);
+		System.out.printf("%nThe total cost of your order is £%.02f%n", finalPrice);
+
 		// Print the final Order
 		PrintClass.printCurrentOrder(order, singleOrderItems);
 
+		RecieptWriter.writeReciept("src/testfile.txt", order, singleOrderItems, finalPrice);
+
+		System.out.println("THANKS FOR YOUR ORDER!");
+		
 		sc.close();
 	}
 
-	///////////////////////////end of main /////////////////////////////////
+	/////////////////////////// end of main /////////////////////////////////
 
 	/**
 	 * Used to verify is a given String is on the menu by simply comparing each list
@@ -112,7 +122,7 @@ public class Main {
 	 *            item to be checked
 	 * @return true if it is on the menu, else false
 	 */
-	public static boolean verifyInputIsOnMenu(String input) {
+	static boolean verifyInputIsOnMenu(String input) {
 
 		for (int i = 0; i < foodMenu.getMains().size(); i++) {
 			if (foodMenu.getMains().get(i).toUpperCase().contentEquals(input)) {
@@ -150,74 +160,80 @@ public class Main {
 	 * @return true or false depending if the user is finished editing or not (false
 	 *         indicates finished)
 	 */
-	public static boolean editOrder(Scanner sc, ArrayList<FoodOrder> mealList, ArrayList<String> singleOrderItems) {
+	static boolean editOrder(Scanner sc, ArrayList<FoodOrder> mealList, ArrayList<String> singleOrderItems) {
 
-		System.out.println("Would you like to place your order and pay, or edit your order?");
+		PrintClass.printCurrentOrder(mealList, singleOrderItems);
+
+		System.out.println(
+				"Please enter any edits to your order here, some examples of what can \n"
+				+ "be entered are 'delete meal 1', 'change the main of meal 2 to cheeseburger',\n"
+				+ " 'delete water'. When you are happy with your order, type and enter 'PAY'.\n");
 		String userResponse = sc.nextLine();
 
-		// Check if the user input contains "edit" at any point
-		if (userResponse.contains("edit")) {
+		userResponse = userResponse.toUpperCase();
 
-			System.out.println("Would you like to edit a meal or a single item?");
-			userResponse = sc.nextLine();
-
-			// Check if the user input contains "meal" at any point
-			if (userResponse.contains("meal")) {
-
-				// Get meal number to edit
-				System.out.println("Enter the meal number you wish to edit:");
-				int editMeal = sc.nextInt();
-				sc.nextLine(); // Clear the return character
-
-				// Get which part of meal to edit
-				System.out.println("Would you like to edit the main, side or drink?:");
-				userResponse = sc.nextLine();
-
-				// Variable to hold the new value
-				String newValue;
-
-				// Get new value and validate it
-				do {
-					System.out.println(
-							"What would you like to change this to? " + "(Please enter a valid option from the menu):");
-					newValue = sc.nextLine().toUpperCase();
-				} while (verifyInputIsOnMenu(newValue) == false);
-
-				// Set new value depending on which part of the meal is to be edited
-				if (userResponse.contains("main")) {
-					mealList.get(editMeal - 1).setMain(newValue.toUpperCase());
-
-				} else if (userResponse.contains("side")) {
-					mealList.get(editMeal - 1).setSide(newValue.toUpperCase());
-
-				} else if (userResponse.contains("drink")) {
-					mealList.get(editMeal - 1).setDrink(newValue.toUpperCase());
-				}
-
-			} else if (userResponse.contains("item") || userResponse.contains("single")) {
-
-				// Variable to hold the value to delete
-				String itemToDelete;
-
-				// Get the item to delete and validate it
-				do {
-					System.out.println("Which single items would you like to remove?:");
-					itemToDelete = sc.nextLine().toUpperCase();
-				} while (verifyInputIsOnMenu(itemToDelete) == false);
-
-				// Remove item
-				singleOrderItems.remove(itemToDelete);
-			}
-
-			// return true to continue editing
-			return true;
-
-		} else {
-			// return false to stop the edit loop, as the user indicated they are done
-			// editing.
+		if (userResponse.contains("PAY")) {
 			return false;
+
 		}
 
+		// Code for CHANGING part of a MEAL
+		if (userResponse.contains("CHANGE") && userResponse.contains("MEAL")) {
+
+			ArrayList<ArrayList<String>> changeTo = new ArrayList<ArrayList<String>>();
+
+			changeTo = scanUserInput(userResponse);
+			String newValue = null;
+
+			for (int i = 0; i < 3; i++) {
+
+				if (changeTo.get(i).size() == 1) {
+
+					newValue = changeTo.get(i).get(0);
+
+				}
+
+			}
+
+			if (userResponse.contains("MAIN")) {
+				mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1).setMain(newValue.toUpperCase());
+
+			} else if (userResponse.contains("SIDE")) {
+				mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1).setSide(newValue.toUpperCase());
+
+			} else if (userResponse.contains("DRINK")) {
+				mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1).setDrink(newValue.toUpperCase());
+
+			}
+
+			// Code for DELETING a MEAL
+		} else if (userResponse.contains("DELETE") && userResponse.contains("MEAL")) {
+
+			mealList.remove(mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1));
+
+			// Code for DELETING a SINGLE ITEM
+		} else if (userResponse.contains("DELETE") && !userResponse.contains("MEAL")) {
+
+			ArrayList<ArrayList<String>> changeTo = new ArrayList<ArrayList<String>>();
+
+			changeTo = scanUserInput(userResponse);
+			String newValue = null;
+
+			for (int i = 0; i < 3; i++) {
+
+				if (changeTo.get(i).size() == 1) {
+
+					newValue = changeTo.get(i).get(0);
+
+				}
+
+			}
+
+			singleOrderItems.remove(newValue);
+
+		}
+
+		return true;
 	}
 
 	/**
@@ -229,7 +245,7 @@ public class Main {
 	 * @param mealOrders
 	 *            ArrayList of meals
 	 */
-	public static void superSizeMeals(Scanner sc, ArrayList<FoodOrder> mealOrders) {
+	static void superSizeMeals(Scanner sc, ArrayList<FoodOrder> mealOrders) {
 
 		System.out.println("Would you like to supersize any of your meals? This will upgrade\n"
 				+ "your food to a larger size for only £1! If you would like to supersize \n"
@@ -249,7 +265,14 @@ public class Main {
 
 			if (!splitList[i].equals("")) {
 
-				mealOrders.get(Integer.parseInt(splitList[i]) - 1).superSize();
+				// Try catch to prevent invalid numbers throwing an error
+				try {
+					mealOrders.get(Integer.parseInt(splitList[i]) - 1).superSize();
+
+				} catch (IndexOutOfBoundsException e) {
+					System.out.printf("Meal number '%s' was not found %n", splitList[i]);
+
+				}
 
 			}
 
@@ -265,14 +288,14 @@ public class Main {
 	 *            scanner to be used in method
 	 * @return foodToOrder is a list of keywords such as menu items
 	 */
-	public static ArrayList<ArrayList<String>> getOrder(Scanner sc) {
+	static ArrayList<ArrayList<String>> getOrder(Scanner sc) {
 
 		// Array to store the food to be ordered (mains, sides and drinks)
 		ArrayList<ArrayList<String>> foodToOrder = new ArrayList<ArrayList<String>>();
 
 		do {
 			// Get user input and convert to upper-case
-			System.out.println("What would you like to order? (type 'help' for help):");
+			System.out.println("What would you like to order? (type 'help' for help, 'cancel' to cancel):");
 			String userResponse = sc.nextLine().toUpperCase();
 
 			// Replace all non-word characters with spaces
@@ -295,7 +318,7 @@ public class Main {
 	 *            userInput to be checked
 	 * @return ArrayList of matching items
 	 */
-	public static ArrayList<ArrayList<String>> scanUserInput(String userInput) {
+	static ArrayList<ArrayList<String>> scanUserInput(String userInput) {
 
 		// Create empty array to hold the split input
 		String[] splitUserInput = new String[0];
@@ -342,7 +365,8 @@ public class Main {
 		}
 
 		// If nothing was found, print an error and return null to restart the order
-		if (mainsToOrder.size() == 0 && sidesToOrder.size() == 0 && drinksToOrder.size() == 0) {
+		if (mainsToOrder.size() == 0 && sidesToOrder.size() == 0 && drinksToOrder.size() == 0
+				&& !userInput.contains("CANCEL")) {
 
 			System.out.println("No valid menu items were found in your order. \nPlease "
 					+ "only order food items that are displayed on the menu above.");
@@ -369,7 +393,7 @@ public class Main {
 	 *            list of any meals
 	 * @return double price of all food in order
 	 */
-	public static double getFinalPrice(ArrayList<String> foodToOrder, ArrayList<FoodOrder> order) {
+	static double getFinalPrice(ArrayList<String> singleOrderItems, ArrayList<FoodOrder> order) {
 
 		double totalPrice = 0;
 
@@ -381,9 +405,9 @@ public class Main {
 		}
 
 		// Loop through all items not in meals and add their price on to the total
-		for (int i = 0; i < foodToOrder.size(); i++) {
+		for (int i = 0; i < singleOrderItems.size(); i++) {
 
-			totalPrice += foodMenu.getPrice(foodToOrder.get(i));
+			totalPrice += foodMenu.getPrice(singleOrderItems.get(i));
 
 		}
 
@@ -403,7 +427,7 @@ public class Main {
 	 *            number of drinks
 	 * @return smallest length and longest length in an array[2]
 	 */
-	public static int[] getNumberMeals(int numMains, int numSides, int numDrinks) {
+	static int[] getNumberMeals(int numMains, int numSides, int numDrinks) {
 
 		int[] arrayLengths = new int[] { numMains, numSides, numDrinks };
 
