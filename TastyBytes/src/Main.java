@@ -1,9 +1,9 @@
 import java.util.*;
 
-//cheeseburger with fries and a sprite, and also a hotdog meal with mash and tea, and also water
-
 /**
  * The main class.
+ * 
+ * The menu is configurable from the menuOptions text file.
  * 
  * @author Ethan Wilson
  *
@@ -13,9 +13,9 @@ public class Main {
 	// Create a menu object for use
 	static Menu foodMenu = new Menu();
 
-	/**
-	 * main method
-	 */
+
+	//Main method
+
 	public static void main(String[] args) {
 
 		Scanner sc = new Scanner(System.in);
@@ -108,7 +108,7 @@ public class Main {
 		RecieptWriter.writeReciept("src/testfile.txt", order, singleOrderItems, finalPrice);
 
 		System.out.println("THANKS FOR YOUR ORDER!");
-		
+
 		sc.close();
 	}
 
@@ -118,8 +118,7 @@ public class Main {
 	 * Used to verify is a given String is on the menu by simply comparing each list
 	 * of menu items (mains, sides, drinks) to the String parsed to it.
 	 *
-	 * @param input
-	 *            item to be checked
+	 * @param input item to be checked
 	 * @return true if it is on the menu, else false
 	 */
 	static boolean verifyInputIsOnMenu(String input) {
@@ -150,13 +149,10 @@ public class Main {
 	 * Asks the user if they want to edit any part of their order before placing the
 	 * order.
 	 * 
-	 * @param sc
-	 *            scanner to be parsed
-	 * @param mealList
-	 *            the list of meals available for edit
-	 * @param singleOrderItems
-	 *            the list of all items available for edit that are not part of a
-	 *            meal
+	 * @param sc               scanner to be parsed
+	 * @param mealList         the list of meals available for edit
+	 * @param singleOrderItems the list of all items available for edit that are not
+	 *                         part of a meal
 	 * @return true or false depending if the user is finished editing or not (false
 	 *         indicates finished)
 	 */
@@ -164,14 +160,15 @@ public class Main {
 
 		PrintClass.printCurrentOrder(mealList, singleOrderItems);
 
-		System.out.println(
-				"Please enter any edits to your order here, some examples of what can \n"
+		System.out.println("Please enter any edits to your order here, some examples of what can \n"
 				+ "be entered are 'delete meal 1', 'change the main of meal 2 to cheeseburger',\n"
 				+ " 'delete water'. When you are happy with your order, type and enter 'PAY'.\n");
 		String userResponse = sc.nextLine();
 
+		// Set the user response to upper case.
 		userResponse = userResponse.toUpperCase();
 
+		// If the user enters "pay" then cancel
 		if (userResponse.contains("PAY")) {
 			return false;
 
@@ -180,55 +177,116 @@ public class Main {
 		// Code for CHANGING part of a MEAL
 		if (userResponse.contains("CHANGE") && userResponse.contains("MEAL")) {
 
+			// Create an array to store items that are found in the input string
 			ArrayList<ArrayList<String>> changeTo = new ArrayList<ArrayList<String>>();
 
+			// Populate the list that was just created with the menu items that were found
+			// This will create a 2d array (mains, sides, drinks)
 			changeTo = scanUserInput(userResponse);
 			String newValue = null;
+			int foodType = 0;
 
-			for (int i = 0; i < 3; i++) {
+			/*
+			 * Loop through the newly populated list and set NewValue string to the found
+			 * menu item (if there was one) If no menu items are found then nothing will be
+			 * changed
+			 * 
+			 * Also ensure that the changeTo list is not empty before looping.
+			 */
+			if (changeTo != null) {
+				for (int i = 0; i < 3; i++) {
 
-				if (changeTo.get(i).size() == 1) {
+					if (changeTo.get(i).size() == 1) {
 
-					newValue = changeTo.get(i).get(0);
+						newValue = changeTo.get(i).get(0);
+						foodType = i;
+
+					}
 
 				}
 
-			}
 
-			if (userResponse.contains("MAIN")) {
-				mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1).setMain(newValue.toUpperCase());
+				//Check for MAIN in user response to change a main 
+				if (userResponse.contains("MAIN")) {
+					if (foodType == 0) {
+						
+						//Replace non-digit characters to get the meal number and set the new value
+						mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1)
+								.setMain(newValue.toUpperCase());
 
-			} else if (userResponse.contains("SIDE")) {
-				mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1).setSide(newValue.toUpperCase());
+						System.out.println("The menu item you entered was not a main, please either pick a main or "
+								+ "specify that you want to change something else.");
+					}
 
-			} else if (userResponse.contains("DRINK")) {
-				mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1).setDrink(newValue.toUpperCase());
+				//Check for SIDE in user response to change a side 
+				} else if (userResponse.contains("SIDE")) {
+					if (foodType == 1) {
+						
+						//Replace non-digit characters to get the meal number and set the new value
+						mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1)
+								.setSide(newValue.toUpperCase());
+					}
+
+				//Check for DRINK in user response to change a drink 
+				} else if (userResponse.contains("DRINK")) {
+					if (foodType == 2) {
+						
+						//Replace non-digit characters to get the meal number and set the new value
+						mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1)
+								.setDrink(newValue.toUpperCase());
+					}
+
+				}
 
 			}
 
 			// Code for DELETING a MEAL
 		} else if (userResponse.contains("DELETE") && userResponse.contains("MEAL")) {
+			
+			//If no meal number is entered a NumberFormatException is caught and an error is printed
+			try {
 
-			mealList.remove(mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1));
+				mealList.remove(mealList.get(Integer.valueOf(userResponse.replaceAll("\\D+", "")) - 1));
 
+			} catch(NumberFormatException e) {
+				
+				System.out.println("No meal number found, please try again!");
+				
+			}
+				
 			// Code for DELETING a SINGLE ITEM
 		} else if (userResponse.contains("DELETE") && !userResponse.contains("MEAL")) {
 
+			// Create an array to store items that are found in the input string
 			ArrayList<ArrayList<String>> changeTo = new ArrayList<ArrayList<String>>();
 
+			// Populate the list that was just created with the menu items that were found
+			// This will create a 2d array (mains, sides, drinks)
 			changeTo = scanUserInput(userResponse);
 			String newValue = null;
+			
+			/*
+			 * Loop through the newly populated list and set NewValue string to the found
+			 * menu item (if there was one) If no menu items are found then nothing will be
+			 * changed
+			 * 
+			 * Also ensure that the changeTo list is not empty before looping.
+			 */
+			if (changeTo != null) {
 
-			for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < 3; i++) {
 
-				if (changeTo.get(i).size() == 1) {
+					if (changeTo.get(i).size() == 1) {
 
-					newValue = changeTo.get(i).get(0);
+						newValue = changeTo.get(i).get(0);
+
+					}
 
 				}
 
 			}
 
+			//Remove the determined value
 			singleOrderItems.remove(newValue);
 
 		}
@@ -240,10 +298,8 @@ public class Main {
 	 * Asks the user if they want to SuperSize any meals in the order and updates
 	 * the objects accordingly.
 	 * 
-	 * @param sc
-	 *            scanner for use in method
-	 * @param mealOrders
-	 *            ArrayList of meals
+	 * @param sc         scanner for use in method
+	 * @param mealOrders ArrayList of meals
 	 */
 	static void superSizeMeals(Scanner sc, ArrayList<FoodOrder> mealOrders) {
 
@@ -284,8 +340,7 @@ public class Main {
 	 * Gets an input from user and then scans it {@link scanUserInput} to produce a
 	 * list of keywords such as menu items
 	 * 
-	 * @param sc
-	 *            scanner to be used in method
+	 * @param sc scanner to be used in method
 	 * @return foodToOrder is a list of keywords such as menu items
 	 */
 	static ArrayList<ArrayList<String>> getOrder(Scanner sc) {
@@ -314,8 +369,7 @@ public class Main {
 	 * returned after the whole user input is checked. The arrayList contains a list
 	 * of mains, sides, and drinks
 	 * 
-	 * @param userInput
-	 *            userInput to be checked
+	 * @param userInput userInput to be checked
 	 * @return ArrayList of matching items
 	 */
 	static ArrayList<ArrayList<String>> scanUserInput(String userInput) {
@@ -387,10 +441,8 @@ public class Main {
 	/**
 	 * Works out the price of all meals, and single items that are to be ordered.
 	 * 
-	 * @param foodToOrder
-	 *            list of any single items
-	 * @param order
-	 *            list of any meals
+	 * @param foodToOrder list of any single items
+	 * @param order       list of any meals
 	 * @return double price of all food in order
 	 */
 	static double getFinalPrice(ArrayList<String> singleOrderItems, ArrayList<FoodOrder> order) {
@@ -419,12 +471,9 @@ public class Main {
 	 * Work out which of the arrays is shortest, and which is longest. This will be
 	 * used to determine how many meals can be created
 	 * 
-	 * @param numMains
-	 *            number of mains
-	 * @param numSides
-	 *            number of sides
-	 * @param numDrinks
-	 *            number of drinks
+	 * @param numMains  number of mains
+	 * @param numSides  number of sides
+	 * @param numDrinks number of drinks
 	 * @return smallest length and longest length in an array[2]
 	 */
 	static int[] getNumberMeals(int numMains, int numSides, int numDrinks) {
